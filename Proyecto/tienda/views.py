@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from forms import *
+from .forms import LoginForms
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 
@@ -11,8 +11,8 @@ def user_login(request):
         if form.is_valid():
             cd = form.changed_data
             user = authenticate(request,
-                                username = cd['username'],
-                                password = cd['password'])
+                               username = form.cleaned_data['username'],
+                               password = form.cleaned_data['password'])
             if user is not None:
                 if user.is_active:
                     login(request, user)
@@ -23,4 +23,4 @@ def user_login(request):
                  return HttpResponse('usuario no existe')
     else:
         form = LoginForms()
-        return render(request, 'account/login.html', {'form':form})        
+        return render(request, 'tienda/login.html', {'form':form})        
