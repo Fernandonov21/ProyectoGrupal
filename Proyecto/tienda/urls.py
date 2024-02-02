@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import *
 
 urlpatterns = [
-    path('login/', views.user_login, name = 'login')    
+    path('', user_login, name='login'),  # Usa la función user_login para la ruta de inicio
+    path('login/', user_login, name='login')    
 ]

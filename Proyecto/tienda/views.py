@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .forms import LoginForms
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
+from .models import *
 
 # Create your views here.
 
@@ -11,8 +12,8 @@ def user_login(request):
         if form.is_valid():
             cd = form.changed_data
             user = authenticate(request,
-                               username = form.cleaned_data['username'],
-                               password = form.cleaned_data['password'])
+                               username = form.cleaned_data['Email'],
+                               password = form.cleaned_data['Contraseña'])
             if user is not None:
                 if user.is_active:
                     login(request, user)
