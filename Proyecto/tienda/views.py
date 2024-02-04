@@ -4,24 +4,22 @@ from django.contrib.auth import authenticate, login
 from django.http import HttpResponse
 from .models import *
 
-# Create your views here.
-
 def user_login(request):
-    if request.method == 'POST': #aqui validamos que el request sea un post para guardar información
+    if request.method == 'POST':
         form = LoginForms(request.POST)
         if form.is_valid():
-            cd = form.changed_data
-            user = authenticate(request,
-                               username = form.cleaned_data['Email'],
-                               password = form.cleaned_data['Contraseña'])
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return HttpResponse('usuario autenticado')
+                    return HttpResponse('Usuario autenticado')
                 else:
-                    return HttpResponse('usuario no autenticado')
+                    return HttpResponse('Usuario no autenticado')
             else:
-                 return HttpResponse('usuario no existe')
+                return HttpResponse('Credenciales inválidas')
     else:
         form = LoginForms()
-        return render(request, 'tienda/login.html', {'form':form})        
+    return render(request, 'tienda/login.html', {'form': form})
+   
