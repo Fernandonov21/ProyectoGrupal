@@ -1,12 +1,9 @@
-from django.shortcuts import render
-from .forms import *
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .models import *
-
-
+from .forms import LoginForms, UserRegistrationForm
+from django.contrib.auth.models import User
 
 def user_login(request):
     if request.method == 'POST':
@@ -18,21 +15,27 @@ def user_login(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return HttpResponse('Usuario autenticado')
+                    if user.is_superuser:  # Verifica si el usuario es administrador
+                        return redirect('admin')
+                    else:
+                        return redirect('user')  # Redirige a la página de usuario común
                 else:
                     return HttpResponse('Usuario no autenticado')
             else:
                 return HttpResponse('Credenciales inválidas')
     else:
         form = LoginForms()
-    return render(request, 'tienda/login.html', {'form': form})
-   
+    return render(request, 'registration/login.html', {'form': form})
+
 @login_required
 def admin(request):
-    return render(request,
-                  'tienda/admin.html')
+    return render(request, 'tienda/admin.html', {})
 
+@login_required
+def user_page(request):
+    return render(request, 'tienda/usuario.html', {})
 
+@login_required
 def user_logout(request):
     logout(request)
     return redirect('login')
@@ -49,9 +52,9 @@ def register(request):
             new_user.save()
             return render(request, 'tienda/register_done.html',
                           {'new_user':new_user}
-
             )
+        
+    
     else:
-        user_form =UserRegistrationForm()
-        return render(request, 'tienda/register.html',
-                      {'user_form':user_form})
+        user_form = UserRegistrationForm()
+    return render(request, 'tienda/register.html', {'user_form': user_form})

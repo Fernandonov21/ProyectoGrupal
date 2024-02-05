@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Título por defecto{% endblock %}</title>
+</head>
+<body>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    <div id="content">
+        {% block content %}
+        Contenido por defecto
+        {% endblock %}
+    </div>
+    <div id="footer">
+        {% block footer %}
+        Pie de página por defecto
+        {% endblock %}
+    </div>
+</body>
+</html>
