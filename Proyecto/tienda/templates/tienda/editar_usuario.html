@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <h1>Dashboard</h1>
+  <p>Welcome to your dashboard.</p>
+  <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
+  <h1>Editar Usuario</h1>
+  <form method="post">
+      {% csrf_token %}
+      <label for="id_username">Nombre de usuario:</label><br>
+      {{ form.username }}<br><br>
+
+      <label for="id_first_name">Nombre:</label><br>
+      {{ form.first_name }}<br><br>
+
+      <label for="id_last_name">Apellido:</label><br>
+      {{ form.last_name }}<br><br>
+
+      <label for="id_email">Correo electrónico:</label><br>
+      {{ form.email }}<br><br>
+
+      <button type="submit">Guardar cambios</button>
+  </form>
+{% endblock %}
+</html>

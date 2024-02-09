@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .forms import LoginForms, UserRegistrationForm
+from .forms import LoginForms, UserRegistrationForm, UserEditForm
 from django.contrib.auth.models import User
+
 
 def user_login(request):
     if request.method == 'POST':
@@ -58,3 +59,35 @@ def register(request):
     else:
         user_form = UserRegistrationForm()
     return render(request, 'tienda/register.html', {'user_form': user_form})
+
+
+def users_list(request):
+    users = User.objects.all()
+    context = {
+        'users': users
+    }
+    return render(request,'tienda/admin.html', context)
+
+
+@login_required
+def editar_usuario(request, user_id):
+    # Obtener el usuario a editar o mostrar un error 404 si no existe
+    user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('users_list')
+    else:
+        form = UserEditForm(instance=user)
+    
+    return render(request, 'tienda/editar_usuario.html', {'form': form})
+
+@login_required
+def eliminar_usuario(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        user.delete()
+        return redirect('admin')
+    return render(request, 'tienda/confirm_delete.html', {'user': user})

@@ -7,4 +7,34 @@
     {% csrf_token %}
     <button type="submit">Logout</button>
   </form>
+
+  <div class="container mt-5">
+    <div class="row">
+      {% for user in users %}
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body">
+            <span class="text-primary float-end">ID: {{ user.pk }}</span>
+            <h5>{{ user }}</h5>
+            <p>{{ user.email }}</p>
+            <a href="{% url 'editar_usuario' user.pk %}" class="btn btn-primary">Editar</a>
+            <form id="delete-form-{{ user.pk }}" action="{% url 'eliminar_usuario' user.pk %}" method="post">
+                {% csrf_token %}
+                <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ user.pk }}')">Eliminar</button>
+              </form>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    function confirmDelete(userId) {
+      if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+        document.getElementById('delete-form-' + userId).submit();
+      }
+    }
+  </script>
 {% endblock %}
