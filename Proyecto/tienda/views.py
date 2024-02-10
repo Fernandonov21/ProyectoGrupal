@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from .forms import LoginForms, UserRegistrationForm, UserEditForm
+from .forms import *
 from django.contrib.auth.models import User
+from .models import *
 
 
 def user_login(request):
@@ -91,3 +92,48 @@ def eliminar_usuario(request, user_id):
         user.delete()
         return redirect('admin')
     return render(request, 'tienda/confirm_delete.html', {'user': user})
+
+@login_required
+def product_list(request):
+    categories = Category.objects.all()
+    products = Product.objects.all()
+    context = {
+        'categories' : categories,
+        'products' : products
+    }
+    return render(request, 'tienda/inventario.html', context)
+
+@login_required
+def product_create(request):
+    if request.method == ('POST'):
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        category = request.POST.get('category')
+        category = Category.objects.get(id = category)
+        product = Product.objects.create(
+            name = name,
+            description = description,
+            price = price,
+            category = category
+        )   
+        return redirect('inventario')
+    context = {
+        'categories' : Category.objects.all()
+    }
+    return render(request, 'tienda/crear_producto.html', context)
+
+@login_required
+def editar_producto(request, product_id):
+    #obtenemos el usuario y si no existe controlamos con una excepcion 
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST':
+        form = ProductEditForm(request.POST, instance = product)
+        if form.is_valid:
+            form.save()
+            return redirect('inventario')
+    else:
+        form = ProductEditForm(instance = product) 
+    return render(request, 'tienda/editar_producto.html', {'form':form})       
+
+

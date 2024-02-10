@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
+from .models import *
+
 
 class LoginForms(forms.Form):
     username = forms.CharField()
@@ -34,6 +36,19 @@ class UserEditForm(forms.ModelForm):
             raise forms.ValidationError('Este correo electrónico ya está en uso.')
         return email
     
+class ProductEditForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'price','category']
+    def __init__(self, *args, **kwargs):
+        super(ProductEditForm, self).__init__(*args, **kwargs)
+        self.fields['name'].disabled = True #Bloqueamos la edición del nombre del producto
+
+ 
+
+
+
+
 
 
 
