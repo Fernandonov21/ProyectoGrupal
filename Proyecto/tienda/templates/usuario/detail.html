@@ -1,0 +1,31 @@
+{% extends "base_users.html" %}
+{% block title %}Detalle de Carrito{% endblock %}
+{% block content %}
+
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <img src="https://www.odoo.com/web/image/res.users/1072846/image_1024?unique=3f33558" alt="Generic product" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <span class="text-primary float-end">${{ product.price }}.00</span>
+                    <h5>{{ product }}</h5>
+                    <p>{{ product.description }}</p>
+                    <form action="{% url 'cart-add' product.id %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="number" name="quantity" class="form-control" value="1">
+                            <button type="submit" class="btn btn-primary">Add to cart</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

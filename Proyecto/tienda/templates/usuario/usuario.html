@@ -1,0 +1,30 @@
+{% extends "base_users.html" %}
+{% block title %}Control de Inventario{% endblock %}
+{% block content %}
+
+<h1>Menú del día</h1>
+  <p>Welcome to your dashboard.</p>
+  <form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
+
+  <div class="container mt-5">
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <span class="text-primary float-end">${{ product.price }}.00</span>
+                    <h5>{{ product }}</h5>
+                    <p>{{ product.description }}</p>
+                    <a href="{% url 'product-detail' product.id %}" class="btn btn-primary">Comprar</a>
+                    
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

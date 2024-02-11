@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from .forms import *
 from django.contrib.auth.models import User
 from .models import *
-
+from .utils import get_cart
 
 def user_login(request):
     if request.method == 'POST':
@@ -16,11 +16,11 @@ def user_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 if user.is_active:
-                    login(request, user)
+                    login(request, user)    
                     if user.is_superuser:  # Verifica si el usuario es administrador
                         return redirect('admin')
                     else:
-                        return redirect('user')  # Redirige a la página de usuario común
+                        return redirect('user_page')  # Redirige a la página de usuario común
                 else:
                     return HttpResponse('Usuario no autenticado')
             else:
@@ -31,11 +31,19 @@ def user_login(request):
 
 @login_required
 def admin(request):
-    return render(request, 'tienda/admin.html', {})
+    if request.user.is_authenticated:
+        return redirect('users_list')
+    else:
+        return render(request, 'tienda/admin.html', {})
+
 
 @login_required
 def user_page(request):
-    return render(request, 'tienda/usuario.html', {})
+    if request.user.is_authenticated:
+        # Si el usuario ha iniciado sesión, redirige al menú
+        return redirect('menu')
+    else:
+        return render(request, 'usuario/usuario.html', {})
 
 @login_required
 def user_logout(request):
@@ -92,16 +100,28 @@ def eliminar_usuario(request, user_id):
         user.delete()
         return redirect('admin')
     return render(request, 'tienda/confirm_delete.html', {'user': user})
-
 @login_required
 def product_list(request):
     categories = Category.objects.all()
     products = Product.objects.all()
+    if request.user.is_superuser:
+        template_name = 'tienda/inventario.html'
+    else:
+        template_name = 'usuario/inventario_user.html'
     context = {
         'categories' : categories,
         'products' : products
     }
-    return render(request, 'tienda/inventario.html', context)
+    return render(request, template_name, context)
+
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    context = {
+        'product': product
+    }
+    return render(request, 'usuario/detail.html', context)
+
 
 @login_required
 def product_create(request):
@@ -125,15 +145,79 @@ def product_create(request):
 
 @login_required
 def editar_producto(request, product_id):
-    #obtenemos el usuario y si no existe controlamos con una excepcion 
     product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'POST':
-        form = ProductEditForm(request.POST, instance = product)
-        if form.is_valid:
-            form.save()
-            return redirect('inventario')
+    if request.user.is_superuser:
+        template_name = 'tienda/editar_producto.html'
     else:
-        form = ProductEditForm(instance = product) 
-    return render(request, 'tienda/editar_producto.html', {'form':form})       
+        template_name = 'usuario/editar_producto_user.html'
+
+    if request.method == 'POST':
+        form = ProductEditForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('inventario' if request.user.is_superuser else 'inventario_user')
+    else:
+        form = ProductEditForm(instance=product)
+
+    return render(request, template_name, {'form': form})     
+
+#Metodos para el usuario
+
+@login_required
+def menu(request):
+    categories = Category.objects.all()
+    products = Product.objects.all()
+    context = {
+        'categories' : categories,
+        'products' : products
+    }
+    return render(request, 'usuario/usuario.html', context)
 
 
+
+@login_required
+def detail_list(request):
+    cart = get_cart(request)
+    context = {
+        'cart': cart
+    }
+
+    return render(request, 'cart/detail.html', context)
+
+def cart_detail(request):
+    cart = get_cart(request)
+    context = {
+        'cart': cart
+    }
+    return render(request, 'cart/detail.html', context)
+
+
+@login_required
+def cart_add(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    cart = get_cart(request)
+    quantity = request.POST.get('quantity')
+    cart_item, created = CartItem.objects.get_or_create(
+        cart=cart,
+        product=product,
+        defaults={'quantity': quantity}
+    )
+    if not created:
+        cart_item.quantity += int(quantity)
+        cart_item.save()
+    return redirect('cart-detail')
+
+
+@login_required
+def cart_remove(request, pk):
+    cart_item = get_object_or_404(CartItem, pk=pk)
+    cart_item.delete()
+    return redirect('cart-detail')
+
+@login_required
+def cart_update(request, pk):
+    cart_item = get_object_or_404(CartItem, pk=pk)
+    quantity = request.POST.get('quantity')
+    cart_item.quantity = quantity
+    cart_item.save()
+    return redirect('cart-detail')
